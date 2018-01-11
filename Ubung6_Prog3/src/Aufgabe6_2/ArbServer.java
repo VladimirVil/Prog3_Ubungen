@@ -51,15 +51,17 @@ public class ArbServer {
             //BufferedReader r = new BufferedReader(new InputStreamReader(inStream));  //The original
             BufferedReader r = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             //BufferedReader r = new BufferedReader (new InputStreamReader(System.in));
+            cleanInputFromPutty(socket, inStream, outStream, p, r);
 
             while (true) {
                 p.println("Connection established succesfully ");
-                p.println("Welche Waehrung moechten Sie eingeben?");
-                waehrung = r.readLine();
+                //p.println("Welche Waehrung moechten Sie eingeben?");
+                //waehrung = r.readLine();
                 System.out.println("The input is : " + waehrung);
-                waehrung=testReadMethode(socket, inStream, outStream, p, r);
-                //waehrung = currencyChoice(socket,inStream, outStream, p, r);  //check the correctness of the currency choice 
-                p.println("Welche Wert wollen Sie umrechnen?");
+                //waehrung = testReadMethode(socket, inStream, outStream, p, r);
+                
+                waehrung = currencyChoice(socket, inStream, outStream, p, r);  //check the correctness of the currency choice 
+                //p.println("Welche Wert wollen Sie umrechnen?");
                 /*amountToExchangeStr = r.readLine();
                 amountToExchange = Double.parseDouble(amountToExchangeStr); */
                 amountToExchange = amountCheck(socket, inStream, outStream, p, r);
@@ -95,11 +97,25 @@ public class ArbServer {
     public static String getCurrency() {
         return null;
     }
+    
+    public static void cleanInputFromPutty(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r)
+    {
+        p.println("Cleaning input from putty....please press enter to continue");
+        String input = null;
+        
+        try {
+            input = r.readLine();
+        } catch (IOException ex) {
+            Logger.getLogger(ArbServer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        p.println("Cleaned ");
+        
+    }
 
     public static String currencyChoice(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r) throws IOException {
         String input = null;
         p.println("Welche Waehrung moechten Sie eingeben?");
-        //while (true) {
+        while (true) {
             try {
                 input = r.readLine();
                 p.println("Input received");
@@ -107,10 +123,12 @@ public class ArbServer {
                 e.printStackTrace();
             }
 
-            if (input.equals("EU") || (input.equals("DM"))) {
-                break;
-            } else {
-                p.println("Falsche Eingabe, bitte geben Sie entweder EU oder DM ein");
+            if (input != null) {
+                if (input.equals("EU") || (input.equals("DM"))) {
+                    break;
+                } else {
+                    p.println("Falsche Eingabe, bitte geben Sie entweder EU oder DM ein");
+                }
             }
 
         }
@@ -153,22 +171,19 @@ public class ArbServer {
         p.println("Welche Waehrung moechten Sie eingeben?");
         byte[] buffer = new byte[1024];
         int read;
-        while ((read = inStream.read(buffer)) != -1) 
-        {
+        while ((read = inStream.read(buffer)) != -1) {
             String output = new String(buffer, 0, read);
             System.out.print(output);
             System.out.flush();
-        
 
-        if (input.equals("EU") || (input.equals("DM"))) {
-            break;
-        } else {
-            p.println("Falsche Eingabe, bitte geben Sie entweder EU oder DM ein");
-        }
+            if (input.equals("EU") || (input.equals("DM"))) {
+                break;
+            } else {
+                p.println("Falsche Eingabe, bitte geben Sie entweder EU oder DM ein");
+            }
         }
 
-    
-    return input ;
-}
+        return input;
+    }
 
 }
