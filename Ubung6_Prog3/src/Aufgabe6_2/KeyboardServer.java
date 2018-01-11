@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  *
  * @author Admin
  */
-public class Keyboard extends Thread {
+public class KeyboardServer extends Thread {
 
     public boolean avail = true;
 
@@ -31,7 +31,7 @@ public class Keyboard extends Thread {
             try {
                 sleep(100);
             } catch (InterruptedException ex) {
-                Logger.getLogger(Keyboard.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(KeyboardServer.class.getName()).log(Level.SEVERE, null, ex);
             }
             if (scanner.nextLine() == "SHUTDOWN") {
                 avail = false;

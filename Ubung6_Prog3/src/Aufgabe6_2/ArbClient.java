@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  *
  * @author Admin
  */
-public class ArbClient {
+public class ArbClient{
     public static void main (String[] args) throws IOException
     {
         final String localHost = "127.0.0.1";
@@ -32,9 +32,15 @@ public class ArbClient {
         
         String receivedData = null;
         
+        KeyboardClient keyboardClient = new KeyboardClient(s);
+        keyboardClient.start();
+        
+        //Scanner sc = new 
+        
         while ((receivedData=br.readLine()) != null)
         {
-            System.out.println(receivedData);
+            System.out.println("data received:" + receivedData);
+            
         }  
         
         br.close();

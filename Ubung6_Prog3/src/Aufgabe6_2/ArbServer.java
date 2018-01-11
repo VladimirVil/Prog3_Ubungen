@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,17 +32,19 @@ public class ArbServer {
         String waehrung = null;  // currency,DM oder EU
         double amountToExchange = 0;  // needed sum
         String amountToExchangeStr = null;
-        String confirmationAnswer = null;
+        //String confirmationAnswer = null;
+        boolean confirmationAnswer = false;
         String quit = null;
         final String localHost = "127.0.0.1";
         final int port = 8888;
         String currentTime = null;
-        Keyboard keyboard = new Keyboard();
+        KeyboardServer keyboard = new KeyboardServer();
         keyboard.start();
 
         ServerSocket listener = new ServerSocket(port);
 
         while (keyboard.available()) {
+            try {
             Socket socket = listener.accept();
 
             InputStream inStream = socket.getInputStream();
@@ -52,11 +55,10 @@ public class ArbServer {
             BufferedReader r = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             //BufferedReader r = new BufferedReader (new InputStreamReader(System.in));
             cleanInputFromPutty(socket, inStream, outStream, p, r);
-
+            p.println("Connection established succesfully ");
+            System.out.println("Connection established succesfully");
+            
             while (true) {
-                p.println("Connection established succesfully ");
-                //p.println("Welche Waehrung moechten Sie eingeben?");
-                //waehrung = r.readLine();
                 System.out.println("The input is : " + waehrung);
                 //waehrung = testReadMethode(socket, inStream, outStream, p, r);
                 
@@ -70,26 +72,25 @@ public class ArbServer {
                 } else if (waehrung.equals("DM")) {
                     p.println("The amount in EU is: " + amountToExchange * (DM2EU));
                 }
-                p.println("Darf es noch eine Umrechnung sein?");
+                //p.println("Darf es noch eine Umrechnung sein?");
                 confirmationAnswer = confirmCheck(socket, inStream, outStream, p, r);
-                if (confirmationAnswer.equals("No") || (confirmationAnswer.equals("no"))) {
+                if (confirmationAnswer){
+                    socket.close();
                     break;
                 }
 
-                //InputStream in = socket.getInputStream();
-                //creating buffer reader to read data from socket to the client 
-                //BufferedReader br = new BufferedReader(new InputStreamReader(in));
-                //while ((receivedData = br.readLine()) != null) {
-                //    System.out.println(receivedData);
-                //}
             }
 
-            while (true) {
+          /*  while (true) {
                 quit = r.readLine();
                 if (quit.equals("quit")) {
                     break;
-                }
-
+                } 
+ 
+            }*/
+            }
+            catch(SocketException ex) {
+                System.out.println("Socket closed by client.");
             }
         }
     }
@@ -98,14 +99,19 @@ public class ArbServer {
         return null;
     }
     
-    public static void cleanInputFromPutty(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r)
+    public static void cleanInputFromPutty(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r) throws SocketException
     {
         p.println("Cleaning input from putty....please press enter to continue");
+        System.out.println("Cleaning input from putty....please press enter to continue - Debug purposes");
         String input = null;
         
         try {
             input = r.readLine();
-        } catch (IOException ex) {
+        }
+        catch (SocketException ex) {
+            throw ex;
+        }
+        catch (IOException ex) {
             Logger.getLogger(ArbServer.class.getName()).log(Level.SEVERE, null, ex);
         }
         p.println("Cleaned ");
@@ -150,40 +156,28 @@ public class ArbServer {
         return amount;
     }
 
-    public static String confirmCheck(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r) throws IOException {
+    public static boolean confirmCheck(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r) throws IOException {
         String input = null;
+        boolean result=false;
         p.println("Darf es noch eine Umrechnung sein?");
         while (true) {
             //p.println("Welche Waehrung moechten Sie eingeben?");
             input = r.readLine();
-            if ((input.equals("Ja")) || (input.equals("ja")) || (input.equals("Nein")) || (input.equals("nein"))) {
+            if ((input.equals("Ja")) || (input.equals("ja"))) {
+                result = false;
                 break;
-            } else {
+                
+            } 
+            else if ((input.equals("Nein")) || (input.equals("nein"))) {
+                result=true;
+                break;
+            }
+            else {
                 p.println("Falsche Eingabe, bitte geben Sie entweder EU oder DM ein");
             }
 
         }
-        return input;
-    }
-
-    public static String testReadMethode(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r) throws IOException {
-        String input = null;
-        p.println("Welche Waehrung moechten Sie eingeben?");
-        byte[] buffer = new byte[1024];
-        int read;
-        while ((read = inStream.read(buffer)) != -1) {
-            String output = new String(buffer, 0, read);
-            System.out.print(output);
-            System.out.flush();
-
-            if (input.equals("EU") || (input.equals("DM"))) {
-                break;
-            } else {
-                p.println("Falsche Eingabe, bitte geben Sie entweder EU oder DM ein");
-            }
-        }
-
-        return input;
+        return result;
     }
 
 }
