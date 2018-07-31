@@ -1,8 +1,11 @@
 # Prog3_Ubungen
+Aufgabe6_1:
 
 EchoServer/EchoClient:
 
 Client server implementation, server sends  echo to the client reducing the number of spaces to one
+
+Aufgabe6_2:
 
 ArbServer/ArbClient:
 
