@@ -15,3 +15,8 @@ EchoBeispiel:
 
 Server and Client, server echos everything that comes from client + reduces the amount of spaces to one
 
+
+Ubung2Aufgabe2V3:
+
+Basic text editor using JavaFX. String search + string replacement are implemented 
+
