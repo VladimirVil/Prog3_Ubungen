@@ -1,0 +1,1 @@
+Server and CLient, server echos everything that comes from client + reduces the amount of spaces to one
