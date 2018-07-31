@@ -20,3 +20,6 @@ Ubung2Aufgabe2V3:
 
 Basic text editor using JavaFX. String search + string replacement are implemented 
 
+Aufgabe4_2_2:
+
+Producer/consumer implementation. Producer producers random numbers which are collected by the consumer and printet as a balks diagramm
