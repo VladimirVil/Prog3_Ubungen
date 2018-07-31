@@ -25,23 +25,27 @@ public class KeyboardServer extends Thread {
 
     @Override
     public void run() {
-        System.out.println("Keyboard thread is running");
+        //System.out.println("Keyboard thread is running");
         Scanner scanner = new Scanner(System.in);
-        while (true) {
+        String input = null;
+        //while (true) {
+        while (avail) {
             try {
                 sleep(100);
             } catch (InterruptedException ex) {
                 Logger.getLogger(KeyboardServer.class.getName()).log(Level.SEVERE, null, ex);
             }
-            if (scanner.nextLine() == "SHUTDOWN") {
+            //if (scanner.nextLine() == "SHUTDOWN\n") {
+            input = scanner.nextLine();
+            //System.out.println("the received input is:" + input);
+            if (input.equals("SHUTDOWN")) {
+                //System.out.println(scanner);
+                System.out.print("\nAfter processing next Client, Server will be shut down..\n");
                 avail = false;
             }
 
             //avail = (!avail);  // changes the status of avail.  
-            
-            
             //byte input = scanner.nextByte();
-            
         }
     }
 

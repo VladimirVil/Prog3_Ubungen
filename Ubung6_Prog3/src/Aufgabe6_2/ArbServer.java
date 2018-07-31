@@ -6,6 +6,7 @@
 package Aufgabe6_2;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,8 +27,8 @@ public class ArbServer {
     public static void main(String[] args) throws IOException {
 
         //exchange rates 
-        final double DM2EU = 1.25;
-        final double EU2DM = 0.8;
+        final double DM2EU = 0.8;
+        final double EU2DM = 1.25;
 
         String waehrung = null;  // currency,DM oder EU
         double amountToExchange = 0;  // needed sum
@@ -44,52 +45,43 @@ public class ArbServer {
         ServerSocket listener = new ServerSocket(port);
 
         while (keyboard.available()) {
+            //System.out.println("Debug of shutting down :" + keyboard.available());
             try {
-            Socket socket = listener.accept();
+                Socket socket = listener.accept();
 
-            InputStream inStream = socket.getInputStream();
-            OutputStream outStream = socket.getOutputStream();
-            // attach print stream to send the data
-            PrintStream p = new PrintStream(outStream);
-            //BufferedReader r = new BufferedReader(new InputStreamReader(inStream));  //The original
-            BufferedReader r = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            //BufferedReader r = new BufferedReader (new InputStreamReader(System.in));
-            cleanInputFromPutty(socket, inStream, outStream, p, r);
-            p.println("Connection established succesfully ");
-            System.out.println("Connection established succesfully");
-            
-            while (true) {
-                System.out.println("The input is : " + waehrung);
-                //waehrung = testReadMethode(socket, inStream, outStream, p, r);
-                
-                waehrung = currencyChoice(socket, inStream, outStream, p, r);  //check the correctness of the currency choice 
-                //p.println("Welche Wert wollen Sie umrechnen?");
-                /*amountToExchangeStr = r.readLine();
-                amountToExchange = Double.parseDouble(amountToExchangeStr); */
-                amountToExchange = amountCheck(socket, inStream, outStream, p, r);
-                if (waehrung.equals("EU")) {
-                    p.println("The amount in DM is: " + amountToExchange * (EU2DM));
-                } else if (waehrung.equals("DM")) {
-                    p.println("The amount in EU is: " + amountToExchange * (DM2EU));
+                InputStream inStream = socket.getInputStream();
+                //DataInputStream dataInputStreamTest =  new DataInputStream(inStream);
+                OutputStream outStream = socket.getOutputStream();
+                // attach print stream to send the data
+                PrintStream p = new PrintStream(outStream);
+                //BufferedReader r = new BufferedReader(new InputStreamReader(inStream));  //The original
+                BufferedReader r = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                //BufferedReader r = new BufferedReader (new InputStreamReader(System.in));
+                //cleanInputFromPutty(socket, inStream, outStream, p, r);  //16.01.2018 12:27
+                p.println("Connection established succesfully ");
+                System.out.println("Connection established succesfully");
+
+                while (true) {
+                    //System.out.println("The input is : " + waehrung);
+
+                    waehrung = currencyChoice(socket, inStream, outStream, p, r);  //check the correctness of the currency choice 
+                    amountToExchange = amountCheck(socket, inStream, outStream, p, r);
+                    //System.out.println("Debug: Waehrung hier is: " + waehrung);
+                    if (waehrung.equalsIgnoreCase("EU")) {
+                        p.println("The amount in DM is: " + amountToExchange * (EU2DM));
+                    } else if (waehrung.equalsIgnoreCase("DM")) {
+                        p.println("The amount in EU is: " + amountToExchange * (DM2EU));
+                    }
+                    //p.println("Darf es noch eine Umrechnung sein?");
+                    confirmationAnswer = confirmCheck(socket, inStream, outStream, p, r);
+                    if (confirmationAnswer) {
+                        socket.close();
+                        break;
+                    }
+
                 }
-                //p.println("Darf es noch eine Umrechnung sein?");
-                confirmationAnswer = confirmCheck(socket, inStream, outStream, p, r);
-                if (confirmationAnswer){
-                    socket.close();
-                    break;
-                }
 
-            }
-
-          /*  while (true) {
-                quit = r.readLine();
-                if (quit.equals("quit")) {
-                    break;
-                } 
- 
-            }*/
-            }
-            catch(SocketException ex) {
+            } catch (SocketException ex) {
                 System.out.println("Socket closed by client.");
             }
         }
@@ -98,24 +90,21 @@ public class ArbServer {
     public static String getCurrency() {
         return null;
     }
-    
-    public static void cleanInputFromPutty(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r) throws SocketException
-    {
-        p.println("Cleaning input from putty....please press enter to continue");
+
+    public static void cleanInputFromPutty(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r) throws SocketException {
+        p.println("Cleaning input for putty users....please press enter to continue");
         System.out.println("Cleaning input from putty....please press enter to continue - Debug purposes");
         String input = null;
-        
+
         try {
             input = r.readLine();
-        }
-        catch (SocketException ex) {
+        } catch (SocketException ex) {
             throw ex;
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(ArbServer.class.getName()).log(Level.SEVERE, null, ex);
         }
         p.println("Cleaned ");
-        
+
     }
 
     public static String currencyChoice(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r) throws IOException {
@@ -130,7 +119,8 @@ public class ArbServer {
             }
 
             if (input != null) {
-                if (input.equals("EU") || (input.equals("DM"))) {
+                //p.println("Debug: The input is : " + input);
+                if (input.equalsIgnoreCase("EU") || (input.equalsIgnoreCase("DM"))) {
                     break;
                 } else {
                     p.println("Falsche Eingabe, bitte geben Sie entweder EU oder DM ein");
@@ -158,22 +148,20 @@ public class ArbServer {
 
     public static boolean confirmCheck(Socket s, InputStream inStream, OutputStream outStream, PrintStream p, BufferedReader r) throws IOException {
         String input = null;
-        boolean result=false;
+        boolean result = false;
         p.println("Darf es noch eine Umrechnung sein?");
         while (true) {
             //p.println("Welche Waehrung moechten Sie eingeben?");
             input = r.readLine();
-            if ((input.equals("Ja")) || (input.equals("ja"))) {
+            if (input.equalsIgnoreCase("Ja")) {
                 result = false;
                 break;
-                
-            } 
-            else if ((input.equals("Nein")) || (input.equals("nein"))) {
-                result=true;
+
+            } else if (input.equalsIgnoreCase("Nein")) {
+                result = true;
                 break;
-            }
-            else {
-                p.println("Falsche Eingabe, bitte geben Sie entweder EU oder DM ein");
+            } else {
+                p.println("Falsche Eingabe, bitte geben Sie entweder ja oder nein ein");
             }
 
         }

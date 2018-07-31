@@ -17,34 +17,34 @@ import java.util.logging.Logger;
  *
  * @author Admin
  */
-public class ArbClient{
-    public static void main (String[] args) throws IOException
-    {
+public class ArbClient {
+
+    public static void main(String[] args) throws IOException {
         final String localHost = "127.0.0.1";
         final int port = 8888;
-        
+
         Socket s = new Socket(localHost, port);
-        
+
         //attaching input stream to receive data from Server 
         InputStream in = s.getInputStream();
         //creating buffer reader to read data from socket to the client 
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
-        
+
         String receivedData = null;
-        
+
         KeyboardClient keyboardClient = new KeyboardClient(s);
         keyboardClient.start();
-        
+
         //Scanner sc = new 
-        
-        while ((receivedData=br.readLine()) != null)
-        {
-            System.out.println("data received:" + receivedData);
-            
-        }  
-        
+        while ((receivedData = br.readLine()) != null) {
+            //System.out.println("data received:" + receivedData);
+            System.out.println(receivedData);
+
+        }
+
         br.close();
+        keyboardClient.terminate();
         s.close();
     }
-    
+
 }
